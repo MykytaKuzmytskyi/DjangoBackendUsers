@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from users.models import Transaction
 from users.serializers import UserSerializer, TransactionCreateSerializer
 
+1
+
 
 class APIRootView(APIView):
     @extend_schema(
@@ -50,21 +52,16 @@ class CreateUserView(generics.CreateAPIView):
         return Response({"id": user.id}, status=201)
 
 
-@extend_schema_view(
-    get=extend_schema(
-        description="Retrieve details of a specific user by their ID.",
-        parameters=[
-            OpenApiParameter(name="user_id", description="ID of the user to retrieve", required=True, type=int)
-        ],
-        responses={200: UserSerializer}
-    )
+@extend_schema(
+    description="Retrieve details of a specific user by their ID.",
+    responses={200: UserSerializer}
 )
 class UserDetailView(generics.RetrieveAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
-    lookup_field = "id"  # Поле модели для поиска
-    lookup_url_kwarg = "user_id"  # Параметр из URL
+    lookup_field = "id"
+    lookup_url_kwarg = "user_id"
 
 
 @extend_schema(
