@@ -9,7 +9,7 @@ from users.views import (
     CreateUserView,
     UserDetailView,
     ListUserView,
-    TransactionCreateView,
+    TransactionCreateView, statistic_view,
 )
 
 urlpatterns = [
@@ -23,4 +23,6 @@ urlpatterns = [
     path(
         "add_transaction/", TransactionCreateView.as_view(), name="transaction-create"
     ),
+
+    path("statistic/", statistic_view, name="statistic")
 ]
