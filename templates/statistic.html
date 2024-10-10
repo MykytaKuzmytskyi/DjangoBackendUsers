@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Transaction Statistics</title>
+ <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+ <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+</head>
+<body>
+<div class="container mt-5">
+ <h1 class="text-center">Transaction Statistics</h1>
+ <form method="GET" action="{% url 'statistic' %}" class="mb-4">
+  <div class="form-row align-items-end">
+   <div class="col">
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+   </div>
+   <div class="col">
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+   </div>
+   <div class="col">
+    <label for="user">User:</label>
+    <select name="user" id="user" class="form-control">
+     <option value="">All Users</option>
+     {% for user in users %}
+      <option value="{{ user.id }}"
+              {% if user.id|stringformat:"i" == selected_user_id %}selected{% endif %}>{{ user.username }}</option>
+     {% endfor %}
+    </select>
+   </div>
+   <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'statistic' %}" class="btn btn-secondary">Reset</a>
+   </div>
+  </div>
+ </form>
+
+ <h2>Total Transactions: {{ total_transactions }}</h2>
+ <h2>Total Amount: {{ total_amount }}</h2>
+
+ <canvas id="transactionChart" width="400" height="200"></canvas>
+
+ <table class="table mt-4">
+  <thead>
+  <tr>
+   <th>ID</th>
+   <th>User</th>
+   <th>Type</th>
+   <th>Amount</th>
+   <th>Date</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for transaction in transactions %}
+   <tr>
+    <td>{{ transaction.id }}</td>
+    <td>{{ transaction.user.username }}</td>
+    <td>{{ transaction.get_transaction_type_display }}</td>
+    <td>{{ transaction.amount }}</td>
+    <td>{{ transaction.created_at }}</td>
+   </tr>
+  {% endfor %}
+  </tbody>
+ </table>
+</div>
+
+<script>
+    const ctx = document.getElementById('transactionChart').getContext('2d');
+    const transactionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for transaction in transactions %}'{{ transaction.created_at|date:"d.m.Y" }}',{% endfor %}],
+            datasets: [{
+                label: 'Transaction Amount',
+                data: [{% for transaction in transactions %}{{ transaction.amount }}, {% endfor %}],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
