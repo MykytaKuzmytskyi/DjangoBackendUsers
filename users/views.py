@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
+from django.shortcuts import render
 from drf_spectacular.utils import OpenApiExample, extend_schema, OpenApiParameter, extend_schema_view
 from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
@@ -139,3 +141,24 @@ class TransactionCreateView(generics.CreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionCreateSerializer
     permission_classes = (IsAdminUser,)
+
+
+def statistic_view(request):
+    transactions = Transaction.objects.all()
+    users = get_user_model().objects.all()
+
+    selected_user_id = request.GET.get("user")
+    if selected_user_id:
+        transactions = transactions.filter(user_id=selected_user_id)
+
+    total_transactions = transactions.count()
+    total_amount = transactions.aggregate(Sum("amount"))["amount__sum"] or 0
+
+    context = {
+        "transactions": transactions,
+        "total_transactions": total_transactions,
+        "total_amount": total_amount,
+        "users": users,
+        "selected_user_id": selected_user_id,
+    }
+    return render(request, "statistic.html", context)
